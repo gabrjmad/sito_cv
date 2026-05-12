@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Scroll Hero</title>
+  <meta name="description" content="Hero fullscreen con immagine che si riduce e si sposta a destra durante lo scroll." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f1eb;
+      --bg-2: #ece5db;
+      --panel: rgba(255,255,255,.58);
+      --text: #171511;
+      --muted: #6f675d;
+      --line: rgba(23,21,17,.1);
+      --shadow-lg: 0 30px 90px rgba(34, 27, 18, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f8f5ef 0%, var(--bg) 100%);
+      overflow-x: clip;
+    }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+
+    .brand,
+    .nav-links {
+      pointer-events: auto;
+    }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 18px;
+      opacity: .78;
+    }
+
+    .scroll-stage {
+      position: relative;
+      height: 240vh;
+    }
+
+    .sticky-scene {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: clip;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(255,255,255,.95), transparent 30%),
+        linear-gradient(180deg, #f8f4ed 0%, #f1ebe2 46%, #ece3d7 100%);
+    }
+
+    .scene-grid {
+      position: relative;
+      width: min(1320px, calc(100% - 32px));
+      height: 100%;
+      margin: 0 auto;
+    }
+
+    .hero-copy,
+    .skills-copy,
+    .portrait-shell {
+      position: absolute;
+      will-change: transform, opacity, width, height;
+    }
+
+    .hero-copy {
+      left: 0;
+      top: 50%;
+      width: min(760px, 84vw);
+      transform: translateY(-50%);
+      z-index: 4;
+      transition: opacity .18s linear;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 16px 0 18px;
+      font-size: clamp(3.3rem, 9vw, 8.2rem);
+      line-height: .9;
+      letter-spacing: -0.07em;
+      max-width: 7ch;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 46ch;
+      font-size: clamp(1rem, 1.4vw, 1.12rem);
+      line-height: 1.75;
+      color: var(--muted);
+    }
+
+    .portrait-shell {
+      left: 50%;
+      top: 50%;
+      width: 100vw;
+      height: 100vh;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .portrait-backdrop {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 26%, rgba(255,255,255,.92), rgba(255,255,255,.1) 30%, transparent 52%),
+        linear-gradient(180deg, #f6f2eb 0%, #e8dfd3 100%);
+      transition: border-radius .22s linear, box-shadow .22s linear, inset .22s linear;
+    }
+
+    .portrait-backdrop::after {
+      content: "";
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      bottom: 6%;
+      height: 12%;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,.17), rgba(0,0,0,0) 70%);
+      filter: blur(24px);
+    }
+
+    .portrait {
+      position: relative;
+      z-index: 2;
+      width: min(70vw, 760px);
+      max-height: 92vh;
+      object-fit: contain;
+      object-position: center bottom;
+      filter:
+        drop-shadow(0 18px 26px rgba(0,0,0,.08))
+        drop-shadow(0 40px 70px rgba(0,0,0,.08))
+        contrast(1.04)
+        saturate(1.02);
+    }
+
+    .skills-copy {
+      left: 0;
+      bottom: 10vh;
+      width: min(520px, 88vw);
+      z-index: 5;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .skills-copy h2 {
+      margin: 0 0 16px;
+      font-size: clamp(2rem, 4vw, 4.2rem);
+      line-height: .94;
+      letter-spacing: -0.06em;
+    }
+
+    .skills-copy p {
+      margin: 0 0 18px;
+      line-height: 1.72;
+      color: var(--muted);
+      max-width: 42ch;
+    }
+
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .skill-list li {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+    }
+
+    .after-section {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 96px 0 120px;
+    }
+
+    .after-card {
+      padding: 32px;
+      border-radius: 28px;
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(23,21,17,.08);
+      box-shadow: 0 18px 46px rgba(0,0,0,.05);
+    }
+
+    .after-card h3 {
+      margin: 0 0 12px;
+      font-size: clamp(1.5rem, 3vw, 2.3rem);
+      letter-spacing: -0.04em;
+    }
+
+    .after-card p,
+    .after-card li {
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    @media (max-width: 900px) {
+      .scroll-stage { height: 220vh; }
+      .hero-copy {
+        top: auto;
+        bottom: 14vh;
+        transform: none;
+        width: min(92vw, 640px);
+      }
+      .portrait {
+        width: min(84vw, 520px);
+        max-height: 86vh;
+      }
+      .skills-copy {
+        bottom: 9vh;
+        width: min(90vw, 540px);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav { padding: 16px 16px; }
+      .nav-links { display: none; }
+      .scroll-stage { height: 210vh; }
+      .scene-grid { width: calc(100% - 24px); }
+      h1 { max-width: 8ch; }
+      .portrait-shell {
+        width: 100%;
+        height: 100%;
+      }
+      .portrait {
+        width: min(92vw, 440px);
+        max-height: 74vh;
+      }
+      .skills-copy {
+        width: calc(100% - 8px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-copy,
+      .skills-copy,
+      .portrait-shell,
+      .portrait-backdrop {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="brand">Your Name</div>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#skills">Skills</a>
+      <a href="#notes">Notes</a>
+    </nav>
+  </header>
+
+  <section class="scroll-stage" id="top">
+    <div class="sticky-scene">
+      <div class="scene-grid">
+        <div class="hero-copy" id="heroCopy">
+          <span class="eyebrow">Portfolio intro</span>
+          <h1>Full screen image, then editorial shift.</h1>
+          <p class="lead">
+            All'inizio la foto occupa l'intera scena come visual dominante. Scorrendo, si riduce, si sposta a destra e lascia spazio al contenuto testuale a sinistra, in uno stile ispirato ai portfolio Framer con immagine protagonista e griglia pulita.
+          </p>
+        </div>
+
+        <div class="portrait-shell" id="portraitShell" aria-label="Hero portrait container">
+          <div class="portrait-backdrop" id="portraitBackdrop"></div>
+          <img class="portrait" src="./photo-3__3.jpg" alt="Ritratto scontornato usato nella hero section" width="1080" height="1080" loading="eager" decoding="async">
+        </div>
+
+        <div class="skills-copy" id="skills">
+          <span class="eyebrow">Selected skills</span>
+          <h2>Design, identity, digital craft.</h2>
+          <p>
+            Questa sezione compare quando l'immagine si posiziona a destra. Per ora serve soprattutto a mostrare il comportamento del layout durante lo scroll e come il testo entra in scena senza interrompere il focus iniziale sulla foto.
+          </p>
+          <ul class="skill-list">
+            <li>Creative Direction</li>
+            <li>Brand Identity</li>
+            <li>UI Design</li>
+            <li>Frontend</li>
+            <li>Motion</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="after-section" id="notes">
+    <div class="after-card">
+      <h3>Come migliorare ancora la foto</h3>
+      <ul>
+        <li>Rimuovi il fondo nero e usa un PNG con trasparenza reale, così il soggetto si integra meglio nel fondale chiaro.</li>
+        <li>Rifinisci i bordi dei capelli e della spalla per evitare un contorno troppo artificiale.</li>
+        <li>Schiarisci leggermente il volto e uniforma appena la pelle, senza perdere dettaglio naturale.</li>
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    const stage = document.querySelector('.scroll-stage');
+    const heroCopy = document.getElementById('heroCopy');
+    const portraitShell = document.getElementById('portraitShell');
+    const portraitBackdrop = document.getElementById('portraitBackdrop');
+    const skillsCopy = document.getElementById('skills');
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const lerp = (start, end, t) => start + (end - start) * t;
+
+    function updateScene() {
+      const rect = stage.getBoundingClientRect();
+      const total = stage.offsetHeight - window.innerHeight;
+      const scrolled = clamp(-rect.top, 0, total);
+      const progress = total > 0 ? scrolled / total : 0;
+
+      const portraitScale = lerp(1, 0.48, progress);
+      const moveX = lerp(0, window.innerWidth > 900 ? 28 : 18, progress);
+      const moveY = lerp(0, window.innerWidth > 900 ? 2 : -4, progress);
+
+      portraitShell.style.transform = `translate(-50%, -50%) translate(${moveX}vw, ${moveY}vh) scale(${portraitScale})`;
+      portraitBackdrop.style.borderRadius = `${lerp(0, 34, progress)}px`;
+      portraitBackdrop.style.inset = `${lerp(0, 7, progress)}% ${lerp(0, 4, progress)}% ${lerp(0, 0, progress)}% ${lerp(0, 4, progress)}%`;
+      portraitBackdrop.style.boxShadow = `0 ${lerp(0, 28, progress)}px ${lerp(0, 90, progress)}px rgba(34, 27, 18, ${lerp(0.02, 0.13, progress)})`;
+
+      const heroFade = 1 - clamp(progress * 2.2, 0, 1);
+      heroCopy.style.opacity = heroFade;
+      heroCopy.style.transform = window.innerWidth > 900
+        ? `translateY(calc(-50% + ${progress * -24}px))`
+        : `translateY(${progress * -20}px)`;
+
+      const skillsReveal = clamp((progress - 0.42) / 0.34, 0, 1);
+      skillsCopy.style.opacity = skillsReveal;
+      skillsCopy.style.transform = `translateY(${lerp(26, 0, skillsReveal)}px)`;
+    }
+
+    updateScene();
+    window.addEventListener('scroll', updateScene, { passive: true });
+    window.addEventListener('resize', updateScene);
+  </script>
+</body>
+</html>
